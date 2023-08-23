@@ -1,0 +1,31 @@
+name: Build and Test Run VM Clone with Mocked TrueNAS endpoint
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-run:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Install Dependencies
+      run: yarn install
+    - name: Start Mock TrueNAS Server
+      run: node tests/mockTrueNas.js &
+    - name: Test Run Script
+      env:
+        TRUE_NAS_URL: http://localhost:3000
+        TRUE_NAS_USERNAME: mock_username
+        TRUE_NAS_PASSWORD: mock_password
+        TEMPLATE_VM_ID: mock_template_id
+        NUM_VMS: 10
+      run: node clone_vms.js --url $TRUE_NAS_URL --username $TRUE_NAS_USERNAME --password $TRUE_NAS_PASSWORD --template_vm_id $TEMPLATE_VM_ID --num_vms $NUM_VMS
